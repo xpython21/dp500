@@ -157,7 +157,9 @@ In this task, you will load BPA rules.
 
 	*Tabular Editor opens in a new window and connects live to the data model hosted in Power BI Desktop. Changes made to the model in Tabular Editor aren't propagated to Power BI Desktop until you save them.*
 
-2. To load the BPA rules, select the **Advanced Scripting** tab.
+2. To load the BPA rules, select the **C# Script** tab. 
+
+	*Note: This may be called the Advanced Scripting tab in older versions of Tabular editor.*
 
 	![](../images/dp500-use-tools-to-optimize-power-bi-performance-image13.png)
 
