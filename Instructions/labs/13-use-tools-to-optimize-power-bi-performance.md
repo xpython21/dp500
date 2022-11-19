@@ -159,7 +159,7 @@ In this task, you will load BPA rules.
 
 2. To load the BPA rules, select the **C# Script** tab. 
 
-	*Note: This may be called the Advanced Scripting tab in older versions of Tabular editor.*
+	*Note: This may be called the Advanced Scripting tab in older versions of Tabular Editor.*
 
 	![](../images/dp500-use-tools-to-optimize-power-bi-performance-image13.png)
 
@@ -278,9 +278,11 @@ In this task, you will open BPA and review the results of the checks.
 
 12. When notified that BPA has copied the fix script to the clipboard, select **OK**.
 
-13. Switch to Tabular Editor, and select the **Advanced Scripting** tab.
+13. Switch to Tabular Editor, and select the **C# Script** tab.
 
-	![](../images/dp500-use-tools-to-optimize-power-bi-performance-image26.png)
+	*Note: This may be called the Advanced Scripting tab in older versions of Tabular Editor.*
+
+	![](../images/dp500-use-tools-to-optimize-power-bi-performance-image13.png)
 
 14. To copy the fix script, right-click inside the pane, and then press **Ctrl+C**.
 
@@ -290,7 +292,7 @@ In this task, you will open BPA and review the results of the checks.
 
 15. To run the script, on the toolbar, select the **Run script** command.
 
-	![](../images/dp500-use-tools-to-optimize-power-bi-performance-image28.png)
+	![](../images/dp500-use-tools-to-optimize-power-bi-performance-image14.png)
 
 16. Save the model changes.
 
