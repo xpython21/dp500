@@ -63,7 +63,7 @@ while ($complexPassword -ne 1)
     }
     else
     {
-        Write-Output "$SqlPassword does not meet the compexity requirements."
+        Write-Output "$SqlPassword does not meet the complexity requirements."
     }
 }
 
@@ -79,16 +79,13 @@ foreach ($provider in $provider_list){
 # Generate unique random suffix
 [string]$suffix =  -join ((48..57) + (97..122) | Get-Random -Count 7 | % {[char]$_})
 Write-Host "Your randomly-generated suffix for Azure resources is $suffix"
-# $resourceGroupName = "dp500-$suffix"
-$resourceGroupName = Read-Host "Enter the name of a resource group"
+$resourceGroupName = "dp500-$suffix"
 
 # Choose a random region
 Write-Host "Finding an available region. This may take several minutes...";
 $delay = 0, 30, 60, 90, 120 | Get-Random
 Start-Sleep -Seconds $delay # random delay to stagger requests from multi-student classes
-#$preferred_list = "australiaeast","centralus","southcentralus","eastus2","northeurope","southeastasia","uksouth","westeurope","westus","westus2"
-$preferred_list = "northeurope","uksouth","westeurope"
-
+$preferred_list = "australiaeast","centralus","southcentralus","eastus2","northeurope","southeastasia","uksouth","westeurope","westus","westus2"
 $locations = Get-AzLocation | Where-Object {
     $_.Providers -contains "Microsoft.Synapse" -and
     $_.Providers -contains "Microsoft.Sql" -and
@@ -138,6 +135,7 @@ $synapseWorkspace = "synapse$suffix"
 $dataLakeAccountName = "datalake$suffix"
 
 write-host "Creating $synapseWorkspace Synapse Analytics workspace in $resourceGroupName resource group..."
+write-host "(This may take some time!)"
 New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName `
   -TemplateFile "setup.json" `
   -Mode Complete `
@@ -166,23 +164,6 @@ Get-ChildItem "./data/*.csv" -File | Foreach-Object {
     $file = $_.Name
     Write-Host $file
     $blobPath = "sales/csv/$file"
-    Set-AzStorageBlobContent -File $_.FullName -Container "files" -Blob $blobPath -Context $storageContext
-}
-
-Get-ChildItem "./data/*.parquet" -File | Foreach-Object {
-    write-host ""
-    Write-Host $_.Name
-    $folder = $_.Name.Replace(".snappy.parquet", "")
-    $file = $_.Name.Replace($folder, "orders")
-    $blobPath = "sales/parquet/year=$folder/$file"
-    Set-AzStorageBlobContent -File $_.FullName -Container "files" -Blob $blobPath -Context $storageContext
-}
-
-Get-ChildItem "./data/*.json" -File | Foreach-Object {
-    write-host ""
-    $file = $_.Name
-    Write-Host $file
-    $blobPath = "sales/json/$file"
     Set-AzStorageBlobContent -File $_.FullName -Container "files" -Blob $blobPath -Context $storageContext
 }
 
