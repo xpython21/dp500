@@ -7,38 +7,37 @@ Install-Module -Name Az.Synapse -Force
 # Handle cases where the user has multiple subscriptions
 $subs = Get-AzSubscription | Select-Object
 if($subs.GetType().IsArray -and $subs.length -gt 1){
-    Write-Host "You have multiple Azure subscriptions - please select the one you want to use:"
-    for($i = 0; $i -lt $subs.length; $i++)
-    {
-            Write-Host "[$($i)]: $($subs[$i].Name) (ID = $($subs[$i].Id))"
-    }
-    $selectedIndex = -1
-    $selectedValidIndex = 0
-    while ($selectedValidIndex -ne 1)
-    {
-            $enteredValue = Read-Host("Enter 0 to $($subs.Length - 1)")
-            if (-not ([string]::IsNullOrEmpty($enteredValue)))
-            {
-                if ([int]$enteredValue -in (0..$($subs.Length - 1)))
+        Write-Host "You have multiple Azure subscriptions - please select the one you want to use:"
+        for($i = 0; $i -lt $subs.length; $i++)
+        {
+                Write-Host "[$($i)]: $($subs[$i].Name) (ID = $($subs[$i].Id))"
+        }
+        $selectedIndex = -1
+        $selectedValidIndex = 0
+        while ($selectedValidIndex -ne 1)
+        {
+                $enteredValue = Read-Host("Enter 0 to $($subs.Length - 1)")
+                if (-not ([string]::IsNullOrEmpty($enteredValue)))
                 {
-                    $selectedIndex = [int]$enteredValue
-                    $selectedValidIndex = 1
+                    if ([int]$enteredValue -in (0..$($subs.Length - 1)))
+                    {
+                        $selectedIndex = [int]$enteredValue
+                        $selectedValidIndex = 1
+                    }
+                    else
+                    {
+                        Write-Output "Please enter a valid subscription number."
+                    }
                 }
                 else
                 {
                     Write-Output "Please enter a valid subscription number."
                 }
-            }
-            else
-            {
-                Write-Output "Please enter a valid subscription number."
-            }
-    }
-    $selectedSub = $subs[$selectedIndex].Id
-    Select-AzSubscription -SubscriptionId $selectedSub
-    az account set --subscription $selectedSub
+        }
+        $selectedSub = $subs[$selectedIndex].Id
+        Select-AzSubscription -SubscriptionId $selectedSub
+        az account set --subscription $selectedSub
 }
-
 
 # Prompt user for a password for the SQL Database
 $sqlUser = "SQLUser"
@@ -86,7 +85,7 @@ $resourceGroupName = "dp500-$suffix"
 Write-Host "Finding an available region. This may take several minutes...";
 $delay = 0, 30, 60, 90, 120 | Get-Random
 Start-Sleep -Seconds $delay # random delay to stagger requests from multi-student classes
-$preferred_list = "northeurope","uksouth","westeurope"
+$preferred_list = "australiaeast","centralus","southcentralus","eastus2","northeurope","southeastasia","uksouth","westeurope","westus","westus2"
 $locations = Get-AzLocation | Where-Object {
     $_.Providers -contains "Microsoft.Synapse" -and
     $_.Providers -contains "Microsoft.Sql" -and
@@ -137,7 +136,6 @@ $dataLakeAccountName = "datalake$suffix"
 $sparkPool = "spark$suffix"
 
 write-host "Creating $synapseWorkspace Synapse Analytics workspace in $resourceGroupName resource group..."
-write-host "(This may take some time!)"
 New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName `
   -TemplateFile "setup.json" `
   -Mode Complete `
@@ -158,5 +156,16 @@ $id = (Get-AzADServicePrincipal -DisplayName $synapseWorkspace).id
 New-AzRoleAssignment -Objectid $id -RoleDefinitionName "Storage Blob Data Owner" -Scope "/subscriptions/$subscriptionId/resourceGroups/$resourceGroupName/providers/Microsoft.Storage/storageAccounts/$dataLakeAccountName" -ErrorAction SilentlyContinue;
 New-AzRoleAssignment -SignInName $userName -RoleDefinitionName "Storage Blob Data Owner" -Scope "/subscriptions/$subscriptionId/resourceGroups/$resourceGroupName/providers/Microsoft.Storage/storageAccounts/$dataLakeAccountName" -ErrorAction SilentlyContinue;
 
+# Upload files
+write-host "Loading data..."
+$storageAccount = Get-AzStorageAccount -ResourceGroupName $resourceGroupName -Name $dataLakeAccountName
+$storageContext = $storageAccount.Context
+Get-ChildItem "./data/*.csv" -File | Foreach-Object {
+    write-host ""
+    $file = $_.Name
+    Write-Host $file
+    $blobPath = "sales/orders/$file"
+    Set-AzStorageBlobContent -File $_.FullName -Container "files" -Blob $blobPath -Context $storageContext
+}
 
 write-host "Script completed at $(Get-Date)"
